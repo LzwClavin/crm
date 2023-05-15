@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lzw.crm.workbench.dao.ClueRemarkDao">
+    <select id="getListByCId" parameterType="string" resultType="ClueRemark">
+        select *
+        from tbl_clue_remark
+        where clueId = #{cid}
+    </select>
+
+    <delete id="deleteByCId" parameterType="string">
+        delete
+        from tbl_clue_remark
+        where clueId = #{cid}
+    </delete>
+</mapper>

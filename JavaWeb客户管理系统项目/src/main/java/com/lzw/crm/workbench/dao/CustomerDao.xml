@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lzw.crm.workbench.dao.CustomerDao">
+    <select id="getCustomerByName" parameterType="string" resultType="customer">
+        select *
+        from tbl_customer
+        where name = #{company}
+    </select>
+
+    <insert id="save" parameterType="customer">
+        insert into tbl_customer
+        values (#{id}, #{owner}, #{name}, #{website}, #{phone}, #{createBy}, #{createTime}, #{editBy}, #{editTime},
+                #{contactSummary}, #{nextContactTime}, #{description}, #{address})
+    </insert>
+
+    <!--根据name模糊查询所有匹配的客户名，所以返回类型是List<String>，存储所有客户名-->
+    <select id="getCustomerNames" parameterType="string" resultType="string">
+        select name
+        from tbl_customer
+        where name like '%' #{name} '%'
+    </select>
+</mapper>

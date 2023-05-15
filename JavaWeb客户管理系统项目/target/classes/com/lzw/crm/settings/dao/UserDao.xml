@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lzw.crm.settings.dao.UserDao">
+    <!--dao层接口的方法名是login，传递过来一个map集合，返回一个User对象-->
+    <select id="login" parameterType="map" resultType="user">
+        select *
+        from tbl_user
+        where loginAct = #{username}
+          and loginPwd = #{password}
+    </select>
+
+    <!--返回一个List<User>集合-->
+    <select id="getList" resultType="user">
+        select *
+        from tbl_user
+    </select>
+</mapper>

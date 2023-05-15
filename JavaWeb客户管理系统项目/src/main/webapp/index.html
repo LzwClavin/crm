@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+	<script type="text/javascript">
+		/*
+		自动跳转到登录页，使用欢迎页是因为index.html规定是所有前端原型的入口
+		使用该规定是因为如果不使用，一旦页面过多，程序员无法找到真正的入口，需要到配置文件中找欢迎页配置
+		使用了之后就固定了index.html是入口，方便识别；另外也不能将登录页命名为index.html，因为文件要见名知意
+		*/
+		document.location.href = "login.jsp";
+	</script>
+</body>
+</html>

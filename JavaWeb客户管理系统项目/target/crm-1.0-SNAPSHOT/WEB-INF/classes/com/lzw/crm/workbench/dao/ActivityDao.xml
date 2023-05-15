@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lzw.crm.workbench.dao.ActivityDao">
+    <!--增删改语句没有resultType属性，默认返回整数；语句中使用到的domain中的属性注意不用加上“对象名.”-->
+    <insert id="save" parameterType="activity">
+        insert into tbl_activity
+        values (#{id}, #{owner}, #{name}, #{startDate}, #{endDate}, #{cost}, #{description}, #{createTime}, #{createBy},
+                #{editTime}, #{editBy})
+    </insert>
+
+    <!--
+    查询total不是查询所有记录，因为当有条件查询时，并不是统计整张表的记录条数；另外不需要统计分页查询，因为这是统计所有页的总记录数
+    不需要排序，只需统计即可
+    -->
+    <select id="getTotalByCondition" resultType="int" parameterType="map">
+        select count(*)
+        from tbl_activity a
+        join tbl_user u on a.owner = u.id
+        <where>
+            <if test="name!=null and name!=''">
+                a.name like '%' #{name} '%'
+            </if>
+            <if test="owner!=null and owner!=''">
+                and u.name like '%' #{owner} '%'
+            </if>
+            <if test="startDate!=null and startDate!=''">
+                and a.startDate &gt; #{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                and a.endDate &lt; #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <!--
+    这里条件查询中“and u.name like '%' #{owner} '%'”表示查询所有者时用户不是根据用户的UUID查的，是根据用户名差的，而且是模糊查询
+    填写的开始日期表示数据表中大于这个日期的开始日期都被计算在内，填写的结束日期表示数据表中小于这个日期的结束日期都被计算在内
+    另外“>”和“<”两个符号可能与标签符号冲突，所以xml也可以与html一样使用&gt;和&lt;转义
+    最后对查询结果根据创建市场活动记录的时间降序排序，越新的市场活动越靠前；实际开发中如新闻、手机产品等也是按照创建记录的时间降序
+    但如国有企业的雇员表，排名靠前的是老员工，即按照创建记录的时间升序，因为老员工资历高，为公司贡献大
+    还有一种情况是设置排序号字段，固定某条记录排第几
+    使用limit实现分页查询，MySQL在所有数据库中分页是最方便的，Oracle没有limit，需要子查询，limit的第一个参数是起始记录下标
+    也是略过的记录数，第二个参数是每页的记录数；注意不要在参数外面套小括号，因为limit不是函数，只是一个关键字
+    -->
+    <select id="getActivitysByCondition" resultType="activity" parameterType="map">
+        select a.id, a.name, u.name owner, a.startDate, a.endDate
+        from tbl_activity a
+        join tbl_user u on a.owner = u.id
+        <where>
+            <if test="name!=null and name!=''">
+                a.name like '%' #{name} '%'
+            </if>
+            <if test="owner!=null and owner!=''">
+                and u.name like '%' #{owner} '%'
+            </if>
+            <if test="startDate!=null and startDate!=''">
+                and a.startDate &gt; #{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                and a.endDate &lt; #{endDate}
+            </if>
+        </where>
+        order by a.createTime desc
+        limit #{skipCount},#{pageSize}
+    </select>
+
+    <!--对于接收的数组参数，parameterType的值可以是数组的类型-->
+    <delete id="delete" parameterType="string">
+        delete
+        from tbl_activity
+        where id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--根据id查单条-->
+    <select id="getById" parameterType="string" resultType="activity">
+        select *
+        from tbl_activity
+        where id = #{id}
+    </select>
+
+    <update id="update" parameterType="activity">
+        update tbl_activity
+        set owner=#{owner},
+            name=#{name},
+            startDate=#{startDate},
+            endDate=#{endDate},
+            cost=#{cost},
+            description=#{description},
+            editTime=#{editTime},
+            editBy=#{editBy}
+        where id = #{id}
+    </update>
+
+    <select id="detail" parameterType="string" resultType="activity">
+        select a.id,
+               a.name,
+               u.name owner,
+               a.startDate,
+               a.endDate,
+               a.cost,
+               a.description,
+               a.createTime,
+               a.createBy,
+               a.editTime,
+               a.editBy
+        from tbl_activity a
+                 join tbl_user u on a.owner = u.id
+        where a.id = #{id}
+    </select>
+
+    <!--
+    连接市场活动列表、用户表和关系表，当市场活动的所有者和用户的id匹配时连接，当市场活动的id和关系表的市场活动id匹配时连接
+    再筛选出关系表中的线索id是传过来的id的记录，查询出关系表id、市场活动名、市场活动开始日期、市场活动结束日期和用户名
+    这里用户名要设置成owner，关系表id不用设置成id，因为默认查询出来的字段名就是id
+    -->
+    <select id="getActivitysByCId" parameterType="string" resultType="activity">
+        select ca.id, a.name, a.startDate, a.endDate, u.name owner
+        from tbl_activity a
+                 join tbl_user u on a.owner = u.id
+                 join tbl_clue_activity_relation ca on a.id = ca.activityId
+        where ca.clueId = #{id}
+    </select>
+
+    <!--
+    连接市场活动表和用户表，市场活动的所有者和用户id匹配
+    查询出市场活动id、市场活动名、市场活动开始日期、市场活动结束日期和命名为owner的用户名
+    从中筛选出模糊匹配的市场活动名，以及市场活动id不在关系表中当线索id与传过来的线索id匹配的记录中的市场活动id之间
+    获取所有符合条件的记录
+    -->
+    <select id="getActivitysNNCI" parameterType="map" resultType="activity">
+        select a.id, a.name, a.startDate, a.endDate, u.name owner
+        from tbl_activity a
+                 join tbl_user u on a.owner = u.id
+        where a.name like '%' #{aname} '%' and a.id not in (select activityId from tbl_clue_activity_relation where clueId=#{cid})
+    </select>
+
+    <select id="getActivitysByName" parameterType="string" resultType="activity">
+        select a.id, a.name, a.startDate, a.endDate, u.name owner
+        from tbl_activity a
+                 join tbl_user u on a.owner = u.id
+        where a.name like '%' #{aname} '%'
+    </select>
+</mapper>

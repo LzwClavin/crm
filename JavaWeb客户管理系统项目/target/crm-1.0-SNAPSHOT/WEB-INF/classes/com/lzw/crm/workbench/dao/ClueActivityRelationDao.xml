@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lzw.crm.workbench.dao.ClueActivityRelationDao">
+    <delete id="unbund" parameterType="string">
+        delete
+        from tbl_clue_activity_relation
+        where id = #{id}
+    </delete>
+
+    <!--注意values后面是对象的属性名，不是封装对象时使用的参数名cid和aid-->
+    <insert id="bund" parameterType="ClueActivityRelation">
+        insert into tbl_clue_activity_relation
+        values (#{id}, #{clueId}, #{activityId})
+    </insert>
+
+    <select id="getListByCId" parameterType="string" resultType="ClueActivityRelation">
+        select *
+        from tbl_clue_activity_relation
+        where clueId = #{cid}
+    </select>
+</mapper>

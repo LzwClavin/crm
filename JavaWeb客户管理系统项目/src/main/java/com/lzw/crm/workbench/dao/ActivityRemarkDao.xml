@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lzw.crm.workbench.dao.ActivityRemarkDao">
+    <!--使用foreach遍历参数数组-->
+    <select id="getCountByAIds" resultType="int" parameterType="string">
+        select count(*)
+        from tbl_activity_remark
+        where activityId in
+        <foreach collection="array" item="aid" open="(" close=")" separator=",">
+            #{aid}
+        </foreach>
+    </select>
+
+    <delete id="deleteByAIds" parameterType="string">
+        delete
+        from tbl_activity_remark
+        where activityId in
+        <foreach collection="array" item="aid" open="(" close=")" separator=",">
+            #{aid}
+        </foreach>
+    </delete>
+
+    <!--查询备注列表后，根据创建备注的时间降序排序，越新的备注越靠前排-->
+    <select id="getRemarksByAId" parameterType="string" resultType="ActivityRemark">
+        select *
+        from tbl_activity_remark
+        where activityId = #{aid}
+        order by createTime desc
+    </select>
+
+    <delete id="deleteById" parameterType="string">
+        delete
+        from tbl_activity_remark
+        where id = #{id}
+    </delete>
+
+    <insert id="saveRemark" parameterType="ActivityRemark">
+        insert into tbl_activity_remark
+        values (#{id}, #{noteContent}, #{createTime}, #{createBy}, #{editTime}, #{editBy}, #{editFlag}, #{activityId});
+    </insert>
+
+    <update id="updateRemark" parameterType="ActivityRemark">
+        update tbl_activity_remark
+        set noteContent=#{noteContent},
+            editTime=#{editTime},
+            editBy=#{editBy},
+            editFlag=#{editFlag}
+        where id = #{id}
+    </update>
+</mapper>

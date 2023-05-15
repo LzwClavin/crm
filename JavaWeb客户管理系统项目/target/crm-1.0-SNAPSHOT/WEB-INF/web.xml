@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         id="WebApp_ID" version="2.5">
+    <display-name>crm</display-name>
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+
+    <!--在配置文件中配置过滤器，可以动态调整过滤规则-->
+    <filter>
+        <!--过滤器名-->
+        <filter-name>encoding</filter-name>
+        <!--过滤器类-->
+        <filter-class>com.lzw.crm.web.filter.EncodingFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>encoding</filter-name>
+        <!--
+        过滤器路径，因为后端资源的路径的后缀都是do，所以“*.do”可以过滤项目的所有Servlet，注意前面不能带“/”
+        另外jsp也需要过滤，因为jsp底层也是Servlet，且是负责页面展示的响应工作的，涉及到响应流，需要处理乱码问题
+        但jsp在page指令中已经设置了响应流的字符编码，底层的Servlet也存在该语句，不需要这里再设置
+        如果是“/*”表示过滤项目的所有路径，所有路径都需要通过该过滤器，即使是访问前端资源都会经过过滤器，会降低访问效率
+        -->
+        <url-pattern>*.do</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>login</filter-name>
+        <filter-class>com.lzw.crm.web.filter.LoginFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>login</filter-name>
+
+        <!--
+        过滤所有的前端和后端资源，除了登录页和登录验证操作，如果过滤登录页，因为第一次访问时还没有User对象，会重定向到登录页，造成递归
+        而登录页可以允许访问，不需要过滤；如果过滤登录操作，结果同理
+        -->
+        <url-pattern>*.do</url-pattern>
+        <url-pattern>*.jsp</url-pattern>
+    </filter-mapping>
+</web-app>
